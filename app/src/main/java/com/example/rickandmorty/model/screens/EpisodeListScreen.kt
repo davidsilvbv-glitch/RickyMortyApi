@@ -195,5 +195,7 @@ fun RickAndMortyBottomBar(selectedTab: Int) {
 @Preview(showBackground = true)
 @Composable
 fun EpisodeListScreenPreview() {
-    EpisodeListScreen()
+    com.example.rickandmorty.ui.theme.RickAndMortyTheme {
+        EpisodeListScreen()
+    }
 }

@@ -207,5 +207,7 @@ fun CharacterAvatarItem(character: MockCharacter) {
 @Preview(showBackground = true)
 @Composable
 fun EpisodeDetailScreenPreview() {
-    EpisodeDetailScreen()
+    com.example.rickandmorty.ui.theme.RickAndMortyTheme {
+        EpisodeDetailScreen()
+    }
 }
