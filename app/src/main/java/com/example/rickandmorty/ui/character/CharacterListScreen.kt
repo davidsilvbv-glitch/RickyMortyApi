@@ -9,9 +9,12 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,6 +33,8 @@ fun CharacterListScreen(
     characters: List<Character>,
     onCharacterClick: (Character) -> Unit
 ) {
+    var selectedItem by remember { mutableStateOf(0) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -41,6 +46,52 @@ fun CharacterListScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF121212))
             )
+        },
+        bottomBar = {
+            NavigationBar(
+                containerColor = Color(0xFF1E1E1E),
+                contentColor = Color.White
+            ) {
+                NavigationBarItem(
+                    selected = selectedItem == 0,
+                    onClick = { selectedItem = 0 },
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Characters") },
+                    label = { Text("Characters") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = Color.Green,
+                        selectedTextColor = Color.Green,
+                        unselectedIconColor = Color.Gray,
+                        unselectedTextColor = Color.Gray,
+                        indicatorColor = Color(0xFF121212)
+                    )
+                )
+                NavigationBarItem(
+                    selected = selectedItem == 1,
+                    onClick = { selectedItem = 1 },
+                    icon = { Icon(Icons.Default.Place, contentDescription = "Locations") },
+                    label = { Text("Locations") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = Color.Green,
+                        selectedTextColor = Color.Green,
+                        unselectedIconColor = Color.Gray,
+                        unselectedTextColor = Color.Gray,
+                        indicatorColor = Color(0xFF121212)
+                    )
+                )
+                NavigationBarItem(
+                    selected = selectedItem == 2,
+                    onClick = { selectedItem = 2 },
+                    icon = { Icon(Icons.Default.PlayArrow, contentDescription = "Episodes") },
+                    label = { Text("Episodes") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = Color.Green,
+                        selectedTextColor = Color.Green,
+                        unselectedIconColor = Color.Gray,
+                        unselectedTextColor = Color.Gray,
+                        indicatorColor = Color(0xFF121212)
+                    )
+                )
+            }
         },
         containerColor = Color(0xFF121212)
     ) { innerPadding ->
