@@ -10,9 +10,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.rickandmorty.model.screens.EpisodeDetailScreen
-import com.example.rickandmorty.model.screens.EpisodeListScreen
-import com.example.rickandmorty.model.screens.MockEpisode
+import com.example.rickandmorty.ui.episodes.EpisodeDetailScreen
+import com.example.rickandmorty.ui.episodes.EpisodeListScreen
+import com.example.rickandmorty.ui.episodes.MockEpisode
 import com.example.rickandmorty.ui.theme.RickAndMortyTheme
 
 class MainActivity : ComponentActivity() {
