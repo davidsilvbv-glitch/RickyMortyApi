@@ -19,10 +19,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.rickandmorty.model.Character
 import com.example.rickandmorty.model.LocationRef
 import com.example.rickandmorty.model.OriginRef
@@ -31,14 +33,15 @@ import com.example.rickandmorty.model.OriginRef
 @Composable
 fun CharacterListScreen(
     characters: List<Character>,
-    onCharacterClick: (Character) -> Unit
+    onCharacterClick: (Character) -> Unit,
+    onCharactersClick: () -> Unit = {},
+    onLocationsClick: () -> Unit = {},
+    onEpisodesClick: () -> Unit = {}
 ) {
-    var selectedItem by remember { mutableStateOf(0) }
-
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Characters", fontWeight = FontWeight.Bold, color = Color.Green) },
+                title = { Text("Characters", fontWeight = FontWeight.Bold, color = Color(0xFF97CE4C)) },
                 actions = {
                     IconButton(onClick = { /* Acción de búsqueda */ }) {
                         Icon(Icons.Default.Search, contentDescription = "Buscar", tint = Color.White)
@@ -53,39 +56,39 @@ fun CharacterListScreen(
                 contentColor = Color.White
             ) {
                 NavigationBarItem(
-                    selected = selectedItem == 0,
-                    onClick = { selectedItem = 0 },
+                    selected = true,
+                    onClick = onCharactersClick,
                     icon = { Icon(Icons.Default.Person, contentDescription = "Characters") },
                     label = { Text("Characters") },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.Green,
-                        selectedTextColor = Color.Green,
+                        selectedIconColor = Color(0xFF97CE4C),
+                        selectedTextColor = Color(0xFF97CE4C),
                         unselectedIconColor = Color.Gray,
                         unselectedTextColor = Color.Gray,
                         indicatorColor = Color(0xFF121212)
                     )
                 )
                 NavigationBarItem(
-                    selected = selectedItem == 1,
-                    onClick = { selectedItem = 1 },
+                    selected = false,
+                    onClick = onLocationsClick,
                     icon = { Icon(Icons.Default.Place, contentDescription = "Locations") },
                     label = { Text("Locations") },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.Green,
-                        selectedTextColor = Color.Green,
+                        selectedIconColor = Color(0xFF97CE4C),
+                        selectedTextColor = Color(0xFF97CE4C),
                         unselectedIconColor = Color.Gray,
                         unselectedTextColor = Color.Gray,
                         indicatorColor = Color(0xFF121212)
                     )
                 )
                 NavigationBarItem(
-                    selected = selectedItem == 2,
-                    onClick = { selectedItem = 2 },
+                    selected = false,
+                    onClick = onEpisodesClick,
                     icon = { Icon(Icons.Default.PlayArrow, contentDescription = "Episodes") },
                     label = { Text("Episodes") },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.Green,
-                        selectedTextColor = Color.Green,
+                        selectedIconColor = Color(0xFF97CE4C),
+                        selectedTextColor = Color(0xFF97CE4C),
                         unselectedIconColor = Color.Gray,
                         unselectedTextColor = Color.Gray,
                         indicatorColor = Color(0xFF121212)
@@ -104,7 +107,7 @@ fun CharacterListScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(characters) { character ->
+            items(characters, key = { it.id }) { character ->
                 CharacterCard(character = character, onClick = { onCharacterClick(character) })
             }
         }
@@ -121,18 +124,22 @@ fun CharacterCard(character: Character, onClick: () -> Unit) {
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
     ) {
         Column(
-            modifier = Modifier.padding(8.dp),
+            modifier = Modifier.padding(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Placeholder para la imagen del personaje
             Box(
                 modifier = Modifier
-                    .size(100.dp)
+                    .size(110.dp)
                     .clip(CircleShape)
                     .background(Color.Gray),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Img", color = Color.White)
+                AsyncImage(
+                    model = character.image,
+                    contentDescription = character.name,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -157,7 +164,11 @@ fun CharacterCard(character: Character, onClick: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                val statusColor = if (character.status.lowercase() == "alive") Color.Green else Color.Red
+                val statusColor = when (character.status.lowercase()) {
+                    "alive" -> Color(0xFF97CE4C)
+                    "dead" -> Color.Red
+                    else -> Color.Gray
+                }
                 Box(
                     modifier = Modifier
                         .size(8.dp)
@@ -175,8 +186,8 @@ fun CharacterCard(character: Character, onClick: () -> Unit) {
 @Composable
 fun CharacterListPreview() {
     val mockCharacters = listOf(
-        Character(1, "Rick Sanchez", "Alive", "Human", "", "Male", OriginRef("", ""), LocationRef("", ""), "", emptyList(), "", ""),
-        Character(2, "Morty Smith", "Alive", "Human", "", "Male", OriginRef("", ""), LocationRef("", ""), "", emptyList(), "", "")
+        Character(1, "Rick Sanchez", "Alive", "Human", "", "Male", OriginRef("", ""), LocationRef("", ""), "https://rickandmortyapi.com/api/character/avatar/1.jpeg", emptyList(), "", ""),
+        Character(2, "Morty Smith", "Alive", "Human", "", "Male", OriginRef("", ""), LocationRef("", ""), "https://rickandmortyapi.com/api/character/avatar/2.jpeg", emptyList(), "", "")
     )
     CharacterListScreen(characters = mockCharacters, onCharacterClick = {})
 }

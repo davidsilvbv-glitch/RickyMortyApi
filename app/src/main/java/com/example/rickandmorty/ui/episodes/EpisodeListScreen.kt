@@ -20,9 +20,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.rickandmorty.model.Episode
 import com.example.rickandmorty.ui.theme.RickAndMortyTheme
 
-// Color definitions matching the dark Rick and Morty UI theme
 private val ScreenBackground = Color(0xFF0F1412)
 private val CardBackground = Color(0xFF1B221F)
 private val AccentGreen = Color(0xFF97CE4C)
@@ -33,8 +33,14 @@ private val DarkText = Color(0xFF0F1412)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EpisodeListScreen(
-    episodes: List<MockEpisode> = EpisodeMockData.sampleEpisodes,
-    onEpisodeClick: (MockEpisode) -> Unit = {}
+    episodes: List<Episode> = emptyList(),
+    isLoading: Boolean = false,
+    error: String? = null,
+    onRetry: () -> Unit = {},
+    onEpisodeClick: (Episode) -> Unit = {},
+    onCharactersClick: () -> Unit = {},
+    onLocationsClick: () -> Unit = {},
+    onEpisodesClick: () -> Unit = {}
 ) {
     Scaffold(
         containerColor = ScreenBackground,
@@ -70,22 +76,60 @@ fun EpisodeListScreen(
             )
         },
         bottomBar = {
-            RickAndMortyBottomBar(selectedTab = 2)
+            RickAndMortyBottomBar(
+                selectedTab = 2,
+                onCharactersClick = onCharactersClick,
+                onLocationsClick = onLocationsClick,
+                onEpisodesClick = onEpisodesClick
+            )
         }
     ) { innerPadding ->
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(vertical = 12.dp)
         ) {
-            items(episodes) { episode ->
-                EpisodeItemCard(
-                    episode = episode,
-                    onClick = { onEpisodeClick(episode) }
-                )
+            when {
+                isLoading -> {
+                    CircularProgressIndicator(
+                        color = AccentGreen,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                error != null -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(text = error, color = TextPrimary)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Button(
+                            onClick = onRetry,
+                            colors = ButtonDefaults.buttonColors(containerColor = AccentGreen, contentColor = DarkText)
+                        ) {
+                            Text("Reintentar")
+                        }
+                    }
+                }
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(vertical = 12.dp)
+                    ) {
+                        items(episodes, key = { it.id }) { episode ->
+                            EpisodeItemCard(
+                                episode = episode,
+                                onClick = { onEpisodeClick(episode) }
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -93,7 +137,7 @@ fun EpisodeListScreen(
 
 @Composable
 fun EpisodeItemCard(
-    episode: MockEpisode,
+    episode: Episode,
     onClick: () -> Unit
 ) {
     Surface(
@@ -108,13 +152,12 @@ fun EpisodeItemCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Lime green badge with episode code (e.g. S01E01)
             Surface(
                 shape = CircleShape,
                 color = AccentGreen
             ) {
                 Text(
-                    text = episode.code,
+                    text = episode.episode,
                     color = DarkText,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
@@ -135,7 +178,7 @@ fun EpisodeItemCard(
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "Air ${episode.airDate}",
+                    text = "Air ${episode.air_date}",
                     color = TextSecondary,
                     fontSize = 14.sp
                 )
@@ -145,14 +188,19 @@ fun EpisodeItemCard(
 }
 
 @Composable
-fun RickAndMortyBottomBar(selectedTab: Int) {
+fun RickAndMortyBottomBar(
+    selectedTab: Int,
+    onCharactersClick: () -> Unit = {},
+    onLocationsClick: () -> Unit = {},
+    onEpisodesClick: () -> Unit = {}
+) {
     NavigationBar(
         containerColor = ScreenBackground,
         contentColor = TextSecondary
     ) {
         NavigationBarItem(
             selected = selectedTab == 0,
-            onClick = {},
+            onClick = onCharactersClick,
             icon = { Icon(Icons.Default.Person, contentDescription = "Characters") },
             label = { Text("Characters") },
             colors = NavigationBarItemDefaults.colors(
@@ -165,7 +213,7 @@ fun RickAndMortyBottomBar(selectedTab: Int) {
         )
         NavigationBarItem(
             selected = selectedTab == 1,
-            onClick = {},
+            onClick = onLocationsClick,
             icon = { Icon(Icons.Default.Place, contentDescription = "Locations") },
             label = { Text("Locations") },
             colors = NavigationBarItemDefaults.colors(
@@ -178,7 +226,7 @@ fun RickAndMortyBottomBar(selectedTab: Int) {
         )
         NavigationBarItem(
             selected = selectedTab == 2,
-            onClick = {},
+            onClick = onEpisodesClick,
             icon = { Icon(Icons.Default.Movie, contentDescription = "Episodes") },
             label = { Text("Episodes") },
             colors = NavigationBarItemDefaults.colors(
@@ -196,6 +244,11 @@ fun RickAndMortyBottomBar(selectedTab: Int) {
 @Composable
 fun EpisodeListScreenPreview() {
     RickAndMortyTheme {
-        EpisodeListScreen()
+        EpisodeListScreen(
+            episodes = listOf(
+                Episode(1, "Pilot", "Jan 27, 2022", "S01E01", emptyList(), "", ""),
+                Episode(2, "Lawnmower Dog", "Jul 16, 2021", "S01E02", emptyList(), "", "")
+            )
+        )
     }
 }

@@ -32,38 +32,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.rickandmorty.model.Character
-import com.example.rickandmorty.model.CharacterResponse
+import com.example.rickandmorty.model.Episode
+import com.example.rickandmorty.network.RetrofitClient
 import com.example.rickandmorty.ui.character.CharacterDetailScreen
 import com.example.rickandmorty.ui.character.CharacterListScreen
 import com.example.rickandmorty.ui.episodes.EpisodeDetailScreen
 import com.example.rickandmorty.ui.episodes.EpisodeListScreen
-import com.example.rickandmorty.ui.episodes.MockEpisode
 import com.example.rickandmorty.ui.locations.LocationsFlowScreen
 import com.example.rickandmorty.ui.theme.RickAndMortyTheme
+import com.google.gson.Gson
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import retrofit2.Call
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.GET
 
 private val AppBackground = Color(0xFF0F1412)
 private val AppGreen = Color(0xFF97CE4C)
-
-/** Servicio pequeño para mostrar personajes reales mientras integramos los módulos. */
-private interface CharactersApi {
-    @GET("character")
-    fun obtenerPersonajes(): Call<CharacterResponse>
-}
-
-private val charactersApi: CharactersApi by lazy {
-    Retrofit.Builder()
-        .baseUrl("https://rickandmortyapi.com/api/")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-        .create(CharactersApi::class.java)
-}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,14 +64,17 @@ class MainActivity : ComponentActivity() {
 fun RickAndMortyApp() {
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var selectedCharacter by remember { mutableStateOf<Character?>(null) }
-    var selectedEpisode by remember { mutableStateOf<MockEpisode?>(null) }
+    var selectedEpisode by remember { mutableStateOf<Episode?>(null) }
 
     Box(Modifier.fillMaxSize().background(AppBackground)) {
         when (tab) {
             0 -> CharactersFlow(
                 selectedCharacter = selectedCharacter,
                 onCharacterClick = { selectedCharacter = it },
-                onBackClick = { selectedCharacter = null }
+                onBackClick = { selectedCharacter = null },
+                onCharactersClick = { tab = 0; selectedCharacter = null },
+                onLocationsClick = { tab = 1 },
+                onEpisodesClick = { tab = 2; selectedEpisode = null }
             )
             1 -> LocationsFlowScreen(
                 onCharactersClick = { tab = 0; selectedCharacter = null },
@@ -98,17 +84,21 @@ fun RickAndMortyApp() {
                     tab = 0
                 }
             )
-            2 -> if (selectedEpisode == null) {
-                EpisodeListScreen(onEpisodeClick = { selectedEpisode = it })
-            } else {
-                EpisodeDetailScreen(
-                    episode = selectedEpisode!!,
-                    onBackClick = { selectedEpisode = null }
-                )
-            }
+            2 -> EpisodesFlow(
+                selectedEpisode = selectedEpisode,
+                onEpisodeClick = { selectedEpisode = it },
+                onBackClick = { selectedEpisode = null },
+                onCharactersClick = { tab = 0; selectedCharacter = null },
+                onLocationsClick = { tab = 1 },
+                onEpisodesClick = { tab = 2; selectedEpisode = null },
+                onCharacterClick = { character ->
+                    selectedCharacter = character
+                    tab = 0
+                }
+            )
         }
 
-        // Cubre la barra decorativa de los módulos con una barra que sí navega.
+        // Navegación inferior persistente
         NavigationBar(
             modifier = Modifier.align(Alignment.BottomCenter),
             containerColor = AppBackground
@@ -151,7 +141,10 @@ private fun appNavigationColors() = NavigationBarItemDefaults.colors(
 private fun CharactersFlow(
     selectedCharacter: Character?,
     onCharacterClick: (Character) -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onCharactersClick: () -> Unit,
+    onLocationsClick: () -> Unit,
+    onEpisodesClick: () -> Unit
 ) {
     var characters by remember { mutableStateOf<List<Character>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
@@ -162,7 +155,7 @@ private fun CharactersFlow(
         loading = true
         error = null
         try {
-            val response = withContext(Dispatchers.IO) { charactersApi.obtenerPersonajes().execute() }
+            val response = withContext(Dispatchers.IO) { RetrofitClient.api.getCharacters() }
             if (response.isSuccessful) {
                 characters = response.body()?.results.orEmpty()
             } else {
@@ -178,7 +171,6 @@ private fun CharactersFlow(
 
     when {
         selectedCharacter != null -> {
-            // El detalle de Adri no tiene barra inferior; reservar su espacio.
             Box(Modifier.fillMaxSize().padding(bottom = 80.dp)) {
                 CharacterDetailScreen(character = selectedCharacter, onBackClick = onBackClick)
             }
@@ -191,6 +183,112 @@ private fun CharactersFlow(
         }
         else -> CharacterListScreen(
             characters = characters,
+            onCharacterClick = onCharacterClick,
+            onCharactersClick = onCharactersClick,
+            onLocationsClick = onLocationsClick,
+            onEpisodesClick = onEpisodesClick
+        )
+    }
+}
+
+@Composable
+private fun EpisodesFlow(
+    selectedEpisode: Episode?,
+    onEpisodeClick: (Episode) -> Unit,
+    onBackClick: () -> Unit,
+    onCharactersClick: () -> Unit,
+    onLocationsClick: () -> Unit,
+    onEpisodesClick: () -> Unit,
+    onCharacterClick: (Character) -> Unit
+) {
+    var episodes by remember { mutableStateOf<List<Episode>>(emptyList()) }
+    var loading by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf<String?>(null) }
+    var retry by remember { mutableIntStateOf(0) }
+
+    var episodeCharacters by remember { mutableStateOf<List<Character>>(emptyList()) }
+    var charactersLoading by remember { mutableStateOf(false) }
+    var charactersError by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(retry) {
+        loading = true
+        error = null
+        try {
+            val response = withContext(Dispatchers.IO) { RetrofitClient.api.getEpisodes() }
+            if (response.isSuccessful) {
+                episodes = response.body()?.results.orEmpty()
+            } else {
+                error = "No se pudieron cargar los episodios (HTTP ${response.code()})"
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            error = "Error de conexión: ${e.message ?: "revisa Internet"}"
+        }
+        loading = false
+    }
+
+    LaunchedEffect(selectedEpisode) {
+        if (selectedEpisode != null) {
+            charactersLoading = true
+            charactersError = null
+            episodeCharacters = emptyList()
+
+            val ids = selectedEpisode.characters
+                .mapNotNull { url -> url.substringAfterLast("/").toIntOrNull() }
+                .distinct()
+
+            if (ids.isNotEmpty()) {
+                try {
+                    val response = withContext(Dispatchers.IO) {
+                        RetrofitClient.api.getCharactersByIds(ids.joinToString(","))
+                    }
+                    if (response.isSuccessful && response.body() != null) {
+                        val json = response.body()!!
+                        val gson = Gson()
+                        val list = mutableListOf<Character>()
+                        if (json.isJsonArray) {
+                            json.asJsonArray.forEach { item ->
+                                list.add(gson.fromJson(item, Character::class.java))
+                            }
+                        } else if (json.isJsonObject) {
+                            list.add(gson.fromJson(json, Character::class.java))
+                        }
+                        episodeCharacters = list
+                    } else {
+                        charactersError = "No se pudieron cargar los personajes del episodio"
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    charactersError = "Error al cargar personajes: ${e.message}"
+                }
+            }
+            charactersLoading = false
+        }
+    }
+
+    if (selectedEpisode == null) {
+        EpisodeListScreen(
+            episodes = episodes,
+            isLoading = loading,
+            error = error,
+            onRetry = { retry++ },
+            onEpisodeClick = onEpisodeClick,
+            onCharactersClick = onCharactersClick,
+            onLocationsClick = onLocationsClick,
+            onEpisodesClick = onEpisodesClick
+        )
+    } else {
+        EpisodeDetailScreen(
+            episode = selectedEpisode,
+            characters = episodeCharacters,
+            charactersLoading = charactersLoading,
+            charactersError = charactersError,
+            onBackClick = onBackClick,
+            onCharactersClick = onCharactersClick,
+            onLocationsClick = onLocationsClick,
+            onEpisodesClick = onEpisodesClick,
             onCharacterClick = onCharacterClick
         )
     }

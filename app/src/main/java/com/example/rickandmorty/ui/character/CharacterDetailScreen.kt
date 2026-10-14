@@ -11,11 +11,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.rickandmorty.model.Character
 import com.example.rickandmorty.model.LocationRef
 import com.example.rickandmorty.model.OriginRef
@@ -48,15 +51,20 @@ fun CharacterDetailScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                // Cabecera de imagen grande
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp)
-                        .background(Color.DarkGray, shape = RoundedCornerShape(12.dp)),
+                        .height(240.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color.DarkGray),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Imagen de ${character.name}", color = Color.White)
+                    AsyncImage(
+                        model = character.image,
+                        contentDescription = character.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
                 }
             }
 
@@ -80,7 +88,7 @@ fun CharacterDetailScreen(
             }
 
             item {
-                Text("EPISODES", fontWeight = FontWeight.Bold, color = Color.Green, fontSize = 16.sp)
+                Text("EPISODES", fontWeight = FontWeight.Bold, color = Color(0xFF97CE4C), fontSize = 16.sp)
             }
 
             items(character.episode) { episodeUrl ->
@@ -111,7 +119,7 @@ fun InfoBadge(label: String, value: String) {
 @Composable
 fun DetailSection(title: String, content: String) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text(text = title, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Green)
+        Text(text = title, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF97CE4C))
         Spacer(modifier = Modifier.height(4.dp))
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -139,7 +147,7 @@ fun CharacterDetailPreview() {
         gender = "Male",
         origin = OriginRef("Earth (C-137)", ""),
         location = LocationRef("Citadel of Ricks", ""),
-        image = "",
+        image = "https://rickandmortyapi.com/api/character/avatar/1.jpeg",
         episode = listOf("https://rickandmortyapi.com/api/episode/28", "https://rickandmortyapi.com/api/episode/29"),
         url = "",
         created = ""
