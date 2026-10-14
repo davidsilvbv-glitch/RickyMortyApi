@@ -1,10 +1,6 @@
 package com.example.rickandmorty.model
 
-import com.google.gson.annotations.SerializedName
-
 data class OriginRef(
-    @SerializedName("name")
-    val name: String,
-    @SerializedName("url")
-    val url: String
+    val name: String = "Unknown",
+    val url: String = ""
 )

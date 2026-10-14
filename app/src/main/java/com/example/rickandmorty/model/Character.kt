@@ -1,30 +1,16 @@
 package com.example.rickandmorty.model
 
-import com.google.gson.annotations.SerializedName
-
 data class Character(
-    @SerializedName("id")
     val id: Int,
-    @SerializedName("name")
     val name: String,
-    @SerializedName("status")
     val status: String,
-    @SerializedName("species")
     val species: String,
-    @SerializedName("type")
-    val type: String,
-    @SerializedName("gender")
+    val type: String = "",
     val gender: String,
-    @SerializedName("origin")
-    val origin: OriginRef,
-    @SerializedName("location")
-    val location: LocationRef,
-    @SerializedName("image")
+    val origin: OriginRef = OriginRef(),
+    val location: LocationRef = LocationRef(),
     val image: String,
-    @SerializedName("episode")
-    val episode: List<String>,
-    @SerializedName("url")
-    val url: String,
-    @SerializedName("created")
-    val created: String
+    val episode: List<String> = emptyList(),
+    val url: String = "",
+    val created: String = ""
 )

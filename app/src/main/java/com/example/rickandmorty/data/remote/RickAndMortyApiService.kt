@@ -1,13 +1,12 @@
-package com.example.rickandmorty.network
+package com.example.rickandmorty.data.remote
 
-import com.example.rickandmorty.model.Character
-import com.example.rickandmorty.model.CharacterResponse
-import com.example.rickandmorty.model.Episode
-import com.example.rickandmorty.model.EpisodeResponse
-import com.example.rickandmorty.model.Location
-import com.example.rickandmorty.model.LocationResponse
+import com.example.rickandmorty.data.remote.dto.CharacterDto
+import com.example.rickandmorty.data.remote.dto.CharacterResponseDto
+import com.example.rickandmorty.data.remote.dto.EpisodeDto
+import com.example.rickandmorty.data.remote.dto.EpisodeResponseDto
+import com.example.rickandmorty.data.remote.dto.LocationDto
+import com.example.rickandmorty.data.remote.dto.LocationResponseDto
 import com.google.gson.JsonElement
-import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -15,10 +14,6 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-/**
- * Interfaz Retrofit principal para consumir la API de Rick and Morty.
- * Soporta Corrutinas (suspend) y Calls estándar de Retrofit.
- */
 interface RickAndMortyApiService {
 
     // --- CHARACTERS ---
@@ -28,28 +23,25 @@ interface RickAndMortyApiService {
         @Query("name") name: String? = null,
         @Query("status") status: String? = null,
         @Query("species") species: String? = null
-    ): Response<CharacterResponse>
+    ): Response<CharacterResponseDto>
 
     @GET("character/{id}")
-    suspend fun getCharacter(@Path("id") id: Int): Response<Character>
+    suspend fun getCharacter(@Path("id") id: Int): Response<CharacterDto>
 
     @GET("character/{ids}")
     suspend fun getCharactersByIds(@Path("ids") ids: String): Response<JsonElement>
 
     // --- LOCATIONS ---
     @GET("location")
-    fun getLocations(
+    suspend fun getLocations(
         @Query("page") page: Int = 1,
         @Query("name") name: String? = null,
         @Query("type") type: String? = null,
         @Query("dimension") dimension: String? = null
-    ): Call<LocationResponse>
+    ): Response<LocationResponseDto>
 
     @GET("location/{id}")
-    fun getLocation(@Path("id") id: Int): Call<Location>
-
-    @GET("character/{ids}")
-    fun getCharactersCall(@Path("ids") ids: String): Call<JsonElement>
+    suspend fun getLocation(@Path("id") id: Int): Response<LocationDto>
 
     // --- EPISODES ---
     @GET("episode")
@@ -57,10 +49,10 @@ interface RickAndMortyApiService {
         @Query("page") page: Int = 1,
         @Query("name") name: String? = null,
         @Query("episode") episode: String? = null
-    ): Response<EpisodeResponse>
+    ): Response<EpisodeResponseDto>
 
     @GET("episode/{id}")
-    suspend fun getEpisode(@Path("id") id: Int): Response<Episode>
+    suspend fun getEpisode(@Path("id") id: Int): Response<EpisodeDto>
 }
 
 object RetrofitClient {
