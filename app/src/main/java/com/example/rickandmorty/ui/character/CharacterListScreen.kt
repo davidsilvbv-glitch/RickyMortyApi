@@ -113,7 +113,6 @@ fun CharacterListScreen(
         }
     }
 }
-
 @Composable
 fun CharacterCard(character: Character, onClick: () -> Unit) {
     Card(
@@ -157,6 +156,17 @@ fun CharacterCard(character: Character, onClick: () -> Unit) {
                 fontSize = 14.sp,
                 color = Color.Gray
             )
+
+            // DATO COMBINADO DEL POKÉMON (EN EL MISMO OBJETO Y MISMA CARD)
+            if (!character.pokemonNombre.isNullOrEmpty()) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Poke: ${character.pokemonNombre} (${character.pokemonExp} EXP)",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFFFFCC00)
+                )
+            }
 
             Spacer(modifier = Modifier.height(4.dp))
 

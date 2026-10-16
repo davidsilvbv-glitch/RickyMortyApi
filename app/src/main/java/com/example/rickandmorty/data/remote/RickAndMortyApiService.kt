@@ -6,6 +6,7 @@ import com.example.rickandmorty.data.remote.dto.EpisodeDto
 import com.example.rickandmorty.data.remote.dto.EpisodeResponseDto
 import com.example.rickandmorty.data.remote.dto.LocationDto
 import com.example.rickandmorty.data.remote.dto.LocationResponseDto
+import com.example.rickandmorty.data.remote.dto.PokemonDto
 import com.google.gson.JsonElement
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -53,6 +54,10 @@ interface RickAndMortyApiService {
 
     @GET("episode/{id}")
     suspend fun getEpisode(@Path("id") id: Int): Response<EpisodeDto>
+
+    // --- POKEAPI (DITTO) ---
+    @GET("https://pokeapi.co/api/v2/pokemon/ditto")
+    suspend fun obtenerPokemonPrueba(): Response<PokemonDto>
 }
 
 object RetrofitClient {

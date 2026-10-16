@@ -27,7 +27,27 @@ class RickRepository(
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
                 val info = body.info?.toDomain() ?: PageInfo()
-                val characters = body.results.orEmpty().map { it.toDomain() }
+
+                // 1. Intentamos obtener los datos del Pokémon
+                var pokeNombre: String? = null
+                var pokeExp: Int? = null
+                try {
+                    val pokeResponse = api.obtenerPokemonPrueba()
+                    if (pokeResponse.isSuccessful && pokeResponse.body() != null) {
+                        val pokeDto = pokeResponse.body()!!
+                        pokeNombre = pokeDto.name
+                        pokeExp = pokeDto.base_experience
+                    }
+                } catch (_: Exception) { }
+
+                // 2. Fusionamos ambos orígenes de datos en el ÚNICO objeto Character
+                val characters = body.results.orEmpty().map { dto ->
+                    val domainChar = dto.toDomain()
+                    domainChar.copy(
+                        pokemonNombre = pokeNombre,
+                        pokemonExp = pokeExp
+                    )
+                }
                 Resultado.Exito(Pair(info, characters))
             } else if (response.code() == 404) {
                 Resultado.Exito(Pair(PageInfo(), emptyList()))
