@@ -9,12 +9,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rickandmorty.model.Character
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LocationsFlowScreen(
-    viewModel: LocationViewModel = remember { LocationViewModel() },
+    viewModel: LocationViewModel = viewModel(),
     onCharactersClick: () -> Unit = {},
     onEpisodesClick: () -> Unit = {},
     onResidentClick: ((Character) -> Unit)? = null
