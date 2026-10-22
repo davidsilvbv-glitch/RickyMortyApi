@@ -1,5 +1,7 @@
 package com.example.rickandmorty.data
 
+import com.example.rickandmorty.data.local.FavoritoEntity
+import com.example.rickandmorty.data.local.PersonajeCacheEntity
 import com.example.rickandmorty.data.remote.dto.CharacterDto
 import com.example.rickandmorty.data.remote.dto.EpisodeDto
 import com.example.rickandmorty.data.remote.dto.LocationDto
@@ -76,3 +78,41 @@ fun LocationDto.toDomain(): Location {
         created = created.orEmpty()
     )
 }
+
+fun FavoritoEntity.toCharacter(): Character =
+    Character(
+        id = id,
+        name = nombre,
+        status = "",
+        species = "",
+        type = "",
+        gender = "",
+        origin = OriginRef(),
+        location = LocationRef(),
+        image = imagenUrl,
+        episode = emptyList(),
+        url = "",
+        created = ""
+    )
+
+fun Character.toFavoritoEntity(): FavoritoEntity =
+    FavoritoEntity(id = id, nombre = name, imagenUrl = image)
+
+fun PersonajeCacheEntity.toCharacter(): Character =
+    Character(
+        id = id,
+        name = nombre,
+        status = status,
+        species = species,
+        type = "",
+        gender = "",
+        origin = OriginRef(),
+        location = LocationRef(),
+        image = image,
+        episode = emptyList(),
+        url = "",
+        created = ""
+    )
+
+fun Character.toCacheEntity(): PersonajeCacheEntity =
+    PersonajeCacheEntity(id = id, nombre = name, status = status, species = species, image = image)

@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rickandmorty.model.Character
 import com.example.rickandmorty.model.Episode
 import com.example.rickandmorty.ui.character.CharacterDetailScreen
@@ -136,7 +137,7 @@ private fun appNavigationColors() = NavigationBarItemDefaults.colors(
 
 @Composable
 private fun CharactersFlow(
-    viewModel: CharacterViewModel = remember { CharacterViewModel() },
+    viewModel: CharacterViewModel = viewModel(),
     selectedCharacter: Character?,
     onCharacterClick: (Character) -> Unit,
     onBackClick: () -> Unit,
@@ -172,7 +173,7 @@ private fun CharactersFlow(
 
 @Composable
 private fun EpisodesFlow(
-    viewModel: EpisodeViewModel = remember { EpisodeViewModel() },
+    viewModel: EpisodeViewModel = viewModel(),
     selectedEpisode: Episode?,
     onEpisodeClick: (Episode) -> Unit,
     onBackClick: () -> Unit,
